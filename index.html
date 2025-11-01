@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sports | StreamX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css" />
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <!-- Auth Script -->
+    <script src="auth.js"></script>
+
+    <!-- JW Player -->
+    <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+  </head>
+
+  <body>
+    <div id="header-placeholder"></div>
+
+    <div class="header2">
+      <div class="header2-container">
+        <input
+          type="search"
+          id="searchBar"
+          placeholder="Search matches, teams, events..."
+        />
+      </div>
+    </div>
+
+    <main>
+      <div id="allCategoriesContainer"></div>
+      <p id="message" style="text-align: center; color: #bbb"></p>
+    </main>
+
+    <div id="footer-container"></div>
+
+    <!-- JW Player Popup -->
+    <div id="player-popup">
+      <div id="player-container"></div>
+      <button id="close-player">Close</button>
+    </div>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>

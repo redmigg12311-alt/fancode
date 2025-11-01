@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Responsive Footer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/footer.css" />
+</head>
+
+<body>
+
+    <div class="footer">
+        <div class="footer-content">
+
+            <div class="footer-social">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-youtube"></i></a>
+            </div>
+
+            <div class="footer-links-grid">
+                <ul>
+                    <li><a href="#">Audio Description</a></li>
+                    <li><a href="#">Investor Relations</a></li>
+                    <li><a href="#">Legal Notices</a></li>
+                </ul>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Jobs</a></li>
+                    <li><a href="#">Cookie Preferences</a></li>
+                </ul>
+                <ul>
+                    <li><a href="#">Gift Cards</a></li>
+                    <li><a href="#">Terms of Use</a></li>
+                    <li><a href="#">Corporate Information</a></li>
+                </ul>
+                <ul>
+                    <li><a href="#">Media Center</a></li>
+                    <li><a href="#">Privacy</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-bottom">
+                <button class="service-code">Service Code</button>
+                <p>© 2024 – 2025 StreamX, Inc.</p>
+                <p>StreamX is a registered trademark of StreamX, Inc.</p>
+                <p>All rights reserved.</p>
+            </div>
+
+            <div class="disclaimer">
+                <p>This is a demo application for educational purposes only. No actual streaming services are provided.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const yearSpan = document.getElementById("year");
+            const currentYear = new Date().getFullYear();
+            if (yearSpan) {
+                alert(currentYear); // test if the script runs
+                yearSpan.textContent = currentYear;
+            }
+        });
+    </script>
+
+</body>
+
+</html>
