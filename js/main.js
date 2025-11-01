@@ -1,7 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const allCategoriesContainer = document.getElementById(
-    "allCategoriesContainer"
-  );
+  const allCategoriesContainer = document.getElementById("allCategoriesContainer");
   const searchBar = document.getElementById("searchBar");
   let allMatches = [];
 
@@ -46,52 +44,58 @@ document.addEventListener("DOMContentLoaded", () => {
       const overlay = document.createElement("div");
       overlay.id = "stream-select-overlay";
       overlay.innerHTML = `
-              <div id="stream-select-box">
-                <h3>Select Stream</h3>
-                <button id="adfreeBtn">Ad-Free</button>
-                <button id="daiBtn">Standard</button><br/>
-                <button id="cancelBtn">Cancel</button>
-              </div>
-            `;
+        <div id="stream-select-box">
+          <h3>Select Stream</h3>
+          <button id="adfreeBtn">Ad-Free</button>
+          <button id="daiBtn">Standard</button><br/>
+          <button id="cancelBtn">Cancel</button>
+        </div>
+      `;
       document.body.appendChild(overlay);
 
       overlay.querySelector("#adfreeBtn").onclick = () => {
         overlay.remove();
-        openJWPlayer(adfree_url, match);
+        openVideoPlayer(adfree_url, match);
       };
       overlay.querySelector("#daiBtn").onclick = () => {
         overlay.remove();
-        openJWPlayer(dai_url, match);
+        openVideoPlayer(dai_url, match);
       };
       overlay.querySelector("#cancelBtn").onclick = () => overlay.remove();
     } else {
-      openJWPlayer(adfree_url || dai_url, match);
+      openVideoPlayer(adfree_url || dai_url, match);
     }
   }
 
-  function openJWPlayer(url, match) {
+  // ✅ HTML5 Player with hls.js fallback
+  function openVideoPlayer(url, match) {
     const popup = document.getElementById("player-popup");
     popup.style.display = "flex";
 
-    jwplayer("player-container").setup({
-      file: url,
-      width: "100%",
-      aspectratio: "16:9",
-      autostart: true,
-      hlshtml: true,
-      muted: true,
-      image: match.src || "https://placehold.co/600x375?text=Match+Preview",
-      abouttext: "Ultrawebs (HM)",
-      playbackRateControls: true,
-      cast: { appid: "CC1AD845" },
-      airplay: true,
-    });
+    const container = document.getElementById("player-container");
+    container.innerHTML = `
+      <video id="video-player" controls autoplay playsinline style="width:100%;max-height:80vh;border-radius:10px;">
+        <source src="${url}" type="application/x-mpegURL">
+      </video>
+    `;
+
+    const video = document.getElementById("video-player");
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+    } else {
+      showError("Your browser cannot play this stream.");
+    }
   }
 
   document.getElementById("close-player").onclick = () => {
     const popup = document.getElementById("player-popup");
     popup.style.display = "none";
-    jwplayer("player-container").stop();
+    document.getElementById("player-container").innerHTML = "";
   };
 
   // Match card
@@ -101,22 +105,20 @@ document.addEventListener("DOMContentLoaded", () => {
     card.onclick = () => playChannel(match);
 
     card.innerHTML = `
-            <img src="${
-              match.src || "https://placehold.co/600x375?text=No+Image"
-            }" alt="${match.title || "Match"}"/>
-            <div class="overlay">
-              <div class="title">${match.title || "Untitled"}</div>
-              <div class="teams">${
-                match.team_1 && match.team_2
-                  ? `${match.team_1} vs ${match.team_2}`
-                  : match.match_name || ""
-              }</div>
-              <div class="event">${match.event_name || ""}</div>
-              <div class="time">${formatStartTime(match.startTime)}</div>
-              <span class="badge ${match.status === "LIVE" ? "live" : ""}">
-                ${match.status || ""}
-              </span>
-            </div>`;
+      <img src="${match.src || "https://placehold.co/600x375?text=No+Image"}" alt="${match.title || "Match"}"/>
+      <div class="overlay">
+        <div class="title">${match.title || "Untitled"}</div>
+        <div class="teams">${
+          match.team_1 && match.team_2
+            ? `${match.team_1} vs ${match.team_2}`
+            : match.match_name || ""
+        }</div>
+        <div class="event">${match.event_name || ""}</div>
+        <div class="time">${formatStartTime(match.startTime)}</div>
+        <span class="badge ${match.status === "LIVE" ? "live" : ""}">
+          ${match.status || ""}
+        </span>
+      </div>`;
     return card;
   }
 
