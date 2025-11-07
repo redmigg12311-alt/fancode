@@ -231,7 +231,7 @@ main {
 }
 
 .badge.live {
-  background: var(--live-color);
+  background: var(--accent-live);
 }
 
 .grid-scroll-btn {
