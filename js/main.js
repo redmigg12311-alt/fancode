@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Stream selection popup
     if (adfree_url && dai_url && adfree_url !== dai_url) {
       const overlay = document.createElement("div");
       overlay.id = "stream-select-overlay";
@@ -55,48 +56,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       overlay.querySelector("#adfreeBtn").onclick = () => {
         overlay.remove();
-        openVideoPlayer(adfree_url, match);
+        window.open(adfree_url, "_blank");
       };
       overlay.querySelector("#daiBtn").onclick = () => {
         overlay.remove();
-        openVideoPlayer(dai_url, match);
+        window.open(dai_url, "_blank");
       };
       overlay.querySelector("#cancelBtn").onclick = () => overlay.remove();
     } else {
-      openVideoPlayer(adfree_url || dai_url, match);
+      // Directly open available stream in new tab
+      window.open(adfree_url || dai_url, "_blank");
     }
   }
-
-  // ✅ HTML5 Player with hls.js fallback
-  function openVideoPlayer(url, match) {
-    const popup = document.getElementById("player-popup");
-    popup.style.display = "flex";
-
-    const container = document.getElementById("player-container");
-    container.innerHTML = `
-      <video id="video-player" controls autoplay playsinline style="width:100%;max-height:80vh;border-radius:10px;">
-        <source src="${url}" type="application/x-mpegURL">
-      </video>
-    `;
-
-    const video = document.getElementById("video-player");
-
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = url;
-    } else {
-      showError("Your browser cannot play this stream.");
-    }
-  }
-
-  document.getElementById("close-player").onclick = () => {
-    const popup = document.getElementById("player-popup");
-    popup.style.display = "none";
-    document.getElementById("player-container").innerHTML = "";
-  };
 
   // Match card
   function createMatchCard(match) {
@@ -122,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return card;
   }
 
-  // Movie section with scroll buttons
+  // Section builder
   function createSection(titleText, matches) {
     const section = document.createElement("section");
     section.className = "movie-section";
@@ -163,8 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const updateBtns = () => {
       leftBtn.style.display = container.scrollLeft > 10 ? "block" : "none";
       rightBtn.style.display =
-        container.scrollLeft + container.clientWidth <
-        container.scrollWidth - 10
+        container.scrollLeft + container.clientWidth < container.scrollWidth - 10
           ? "block"
           : "none";
     };
@@ -238,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
   }
 
+  // Search filter
   searchBar.oninput = () => {
     const q = searchBar.value.toLowerCase().trim();
     if (!q) return renderMatches(allMatches);
