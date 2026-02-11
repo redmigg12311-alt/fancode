@@ -34,25 +34,46 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => div.remove(), 3000);
   };
 
-  /* ================= OPEN STREAM USING MATCH ID ================= */
+  /* ================= SECURE STREAM OPEN ================= */
 
-  function openStreamByMatchId(matchId) {
+  async function openSecureStream(matchId) {
+
     if (!matchId) {
       showError("Stream not available.");
       return;
     }
 
-    const streamUrl = `/api/stream/${matchId}`;
-    const newWindow = window.open(streamUrl, "_blank");
+    try {
+      // 1️⃣ Get Token
+      const tokenRes = await fetch(`/api/get-stream-token?match_id=${matchId}`);
 
-    if (!newWindow) {
-      showError("Popup blocked. Please allow popups.");
+      if (!tokenRes.ok) {
+        showError("Unable to generate stream token.");
+        return;
+      }
+
+      const { token, expiry } = await tokenRes.json();
+
+      // 2️⃣ Call Protected Stream
+      const protectedUrl =
+        `/api/stream?match_id=${matchId}&token=${token}&expiry=${expiry}`;
+
+      const newWindow = window.open(protectedUrl, "_blank");
+
+      if (!newWindow) {
+        showError("Popup blocked. Please allow popups.");
+      }
+
+    } catch (err) {
+      console.error(err);
+      showError("Unable to open stream.");
     }
   }
 
   /* ================= STREAM SELECTOR ================= */
 
   function showStreamSelector(match) {
+
     const { match_id, src, title } = match;
 
     const overlay = document.createElement("div");
@@ -84,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("appleWatch").onclick = () => {
       overlay.remove();
-      openStreamByMatchId(match_id);
+      openSecureStream(match_id);
     };
 
     document.getElementById("appleClose").onclick = () => overlay.remove();
@@ -108,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= MATCH CARD ================= */
 
   function createMatchCard(match) {
+
     const card = document.createElement("div");
     card.className = "movie-card";
     card.onclick = () => playChannel(match);
@@ -141,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= SECTION ================= */
 
   function createSection(titleText, matches) {
+
     const section = document.createElement("section");
     section.className = "movie-section";
 
@@ -160,7 +183,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= LOAD MATCHES ================= */
 
   async function loadMatches() {
+
     try {
+
       const res = await fetch(
         "https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json?_=" +
         Date.now()
@@ -177,6 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderMatches(matches) {
+
     allCategoriesContainer.innerHTML = "";
 
     if (!matches.length) {
@@ -186,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const live = matches.filter(m => m.status === "LIVE");
+
     if (live.length)
       allCategoriesContainer.appendChild(createSection("Live Now", live));
 
@@ -206,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= SEARCH ================= */
 
   searchBar.oninput = () => {
+
     const q = searchBar.value.toLowerCase().trim();
 
     if (!q) return renderMatches(allMatches);
