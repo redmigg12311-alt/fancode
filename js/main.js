@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 1️⃣ Get Token
+      // 1️⃣ Get signed token
       const tokenRes = await fetch(`/api/get-stream-token?match_id=${matchId}`);
 
       if (!tokenRes.ok) {
@@ -54,11 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const { token, expiry } = await tokenRes.json();
 
-      // 2️⃣ Call Protected Stream
-      const protectedUrl =
-        `/api/stream?match_id=${matchId}&token=${token}&expiry=${expiry}`;
+      // 2️⃣ Open PLAYER PAGE (NOT API)
+      const playerUrl =
+        `/player.html?match_id=${matchId}&token=${token}&expiry=${expiry}`;
 
-      const newWindow = window.open(protectedUrl, "_blank");
+      const newWindow = window.open(playerUrl, "_blank");
 
       if (!newWindow) {
         showError("Popup blocked. Please allow popups.");
@@ -122,7 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
       showError("No live stream available.");
       return;
     }
-
     showStreamSelector(match);
   }
 
@@ -183,9 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= LOAD MATCHES ================= */
 
   async function loadMatches() {
-
     try {
-
       const res = await fetch(
         "https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json?_=" +
         Date.now()
@@ -212,9 +209,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const live = matches.filter(m => m.status === "LIVE");
-
-    if (live.length)
+    if (live.length) {
       allCategoriesContainer.appendChild(createSection("Live Now", live));
+    }
 
     const grouped = matches.reduce((acc, m) => {
       if (m.status === "LIVE") return acc;

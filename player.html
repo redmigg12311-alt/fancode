@@ -1,118 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F1 Live Match Player</title>
-  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+  <title>Secure Stream</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
     body {
-      background: #0a0a0a;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-    }
-    .match-list {
+      margin: 0;
+      background: black;
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
+      align-items: center;
+      height: 100vh;
     }
-    .match {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 10px 20px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .match:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-    #player-container {
+    video {
       width: 90%;
-      max-width: 900px;
-      margin: auto;
+      max-width: 1200px;
       border-radius: 12px;
-      overflow: hidden;
     }
   </style>
 </head>
 <body>
-  <h1>🏎️ Formula 1 Live Matches</h1>
 
-  <div class="match-list">
-    <div class="match" data-video="https://in-mc-fdlive.fancode.com/mumbai/130929_english_hls_8469ad708c51045adfreeta-di_h264/index.m3u8">
-      🏁 USA Grand Prix 2025
-    </div>
-    <div class="match" data-video="https://cdn.jwplayer.com/manifests/8C9Q3F8L.m3u8">
-      🇲🇽 Mexico City Grand Prix 2025
-    </div>
-    <div class="match" data-video="https://cdn.jwplayer.com/manifests/Va4DkRlm.m3u8">
-      🇧🇷 São Paulo Grand Prix 2025
-    </div>
-  </div>
+<video id="video" controls autoplay></video>
 
-  <div id="player-container"></div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const matchId = params.get("match_id");
+  const token = params.get("token");
+  const expiry = params.get("expiry");
 
-  <script>
-    // Initialize JW Player
-    function initializePlayer(videoUrl) {
-      jwplayer("player-container").setup({
-        aspectratio: "16:9",
-        width: "100%",
-        file: videoUrl,
-        image:
-          "https://d2n9h2wits23hf.cloudfront.net/image/v1/static/6057949432001/8382b094-4a8d-4719-a656-3afa74e3818f/156bd909-72ac-47f9-9c65-f8f3b6553de6/1194x672/match/image.jpg",
-        autostart: true,
-        hlshtml: true,
-        abouttext: "Ultrawebs(HM)",
-        aboutlink: "https://linktr.ee/ultrawebs",
-        logo: {
-          file: "https://media.formula1.com/image/upload/f_auto,c_limit,w_285,q_auto/f_auto/q_auto/fom-website/etc/designs/fom-website/images/F1_75_Logo",
-          position: "bottom-right",
-          margin: "20",
-          hide: "false",
-          size: "05%",
-        },
-        fullscreen: {
-          enabled: true,
-          displayLabel: true,
-          label: "Exit Fullscreen",
-        },
-        playbackRateControls: true,
-        cast: {
-          appid: "CC1AD845", // Chromecast default app ID
-        },
-        airplay: true,
-        sharing: {
-          sites: [
-            "facebook",
-            "twitter",
-            "tumblr",
-            {
-              icon: "https://www.gstatic.com/images/icons/material/system/2x/gmail_64dp.png",
-              label: "Gmail",
-              src: "mailto:?subject=Check%20out%20this%20video&body=Watch%20this%20video%20here:%20https://yourdomain.com/video-page",
-            },
-            {
-              icon: "https://cdn-icons-png.flaticon.com/512/25/25686.png",
-              label: "Embed",
-              src: "javascript:prompt('Embed this video:', `<iframe src='https://yourdomain.com/embed-player.html' width='640' height='360' frameborder='0' allowfullscreen></iframe>`);",
-            },
-          ],
-        },
-      });
-    }
+  const video = document.getElementById("video");
 
-    // Handle match click event
-    document.querySelectorAll(".match").forEach((match) => {
-      match.addEventListener("click", () => {
-        const videoUrl = match.getAttribute("data-video");
-        initializePlayer(videoUrl);
-      });
-    });
-  </script>
+  const streamUrl =
+    `/api/stream?match_id=${matchId}&token=${token}&expiry=${expiry}`;
+
+  if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(streamUrl);
+    hls.attachMedia(video);
+  } else {
+    video.src = streamUrl;
+  }
+</script>
+
 </body>
 </html>
