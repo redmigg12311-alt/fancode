@@ -7,15 +7,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================= HEADER / FOOTER ================= */
 
-  fetch("header.html")
-    .then(r => r.text())
-    .then(d => document.getElementById("header-placeholder").innerHTML = d)
-    .catch(console.error);
+  async function loadLayout() {
+    try {
+      const header = await fetch("header.html").then(r => r.text());
+      const footer = await fetch("footer.html").then(r => r.text());
 
-  fetch("footer.html")
-    .then(r => r.text())
-    .then(d => document.getElementById("footer-container").innerHTML = d)
-    .catch(console.error);
+      document.getElementById("header-placeholder").innerHTML = header;
+      document.getElementById("footer-container").innerHTML = footer;
+    } catch (err) {
+      console.error("Layout load error:", err);
+    }
+  }
 
   /* ================= HELPERS ================= */
 
@@ -36,36 +38,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================= SECURE STREAM OPEN ================= */
 
-  async function openSecureStream(matchId) {
+  async function openSecureStream(match) {
 
-    if (!matchId) {
+    if (!match?.match_id) {
       showError("Stream not available.");
       return;
     }
 
     try {
-      // 1️⃣ Get signed token
-      const tokenRes = await fetch(`/api/get-stream-token?match_id=${matchId}`);
+
+      // 1️⃣ Open blank window immediately (avoids popup blocking)
+      const newWindow = window.open("", "_blank");
+
+      if (!newWindow) {
+        showError("Popup blocked. Please allow popups.");
+        return;
+      }
+
+      // 2️⃣ Get signed token
+      const tokenRes = await fetch(`/api/get-stream-token?match_id=${match.match_id}`);
 
       if (!tokenRes.ok) {
+        newWindow.close();
         showError("Unable to generate stream token.");
         return;
       }
 
       const { token, expiry } = await tokenRes.json();
 
-      // 2️⃣ Open PLAYER PAGE (NOT API)
+      // 3️⃣ Redirect blank window to player page
       const playerUrl =
-        `/player.html?match_id=${matchId}&token=${token}&expiry=${expiry}`;
+        `/player.html?match_id=${match.match_id}` +
+        `&token=${token}` +
+        `&expiry=${expiry}` +
+        `&title=${encodeURIComponent(match.title || "Live Stream")}`;
 
-      const newWindow = window.open(playerUrl, "_blank");
-
-      if (!newWindow) {
-        showError("Popup blocked. Please allow popups.");
-      }
+      newWindow.location.href = playerUrl;
 
     } catch (err) {
-      console.error(err);
+      console.error("Secure stream error:", err);
       showError("Unable to open stream.");
     }
   }
@@ -74,20 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showStreamSelector(match) {
 
-    const { match_id, src, title } = match;
-
     const overlay = document.createElement("div");
     overlay.id = "apple-stream-overlay";
 
     overlay.innerHTML = `
       <div class="apple-modal">
         <div class="apple-preview">
-          <img src="${src || "https://placehold.co/800x450"}" />
+          <img src="${match.src || "https://placehold.co/800x450"}" />
           <div class="apple-gradient"></div>
         </div>
 
         <div class="apple-content">
-          <h2>${title || "Live Stream"}</h2>
+          <h2>${match.title || "Live Stream"}</h2>
           <p>Start watching now</p>
 
           <div class="apple-buttons">
@@ -105,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("appleWatch").onclick = () => {
       overlay.remove();
-      openSecureStream(match_id);
+      openSecureStream(match);
     };
 
     document.getElementById("appleClose").onclick = () => overlay.remove();
@@ -118,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= PLAY CHANNEL ================= */
 
   function playChannel(match) {
-    if (!match.match_id) {
+    if (!match?.match_id) {
       showError("No live stream available.");
       return;
     }
@@ -131,7 +140,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const card = document.createElement("div");
     card.className = "movie-card";
-    card.onclick = () => playChannel(match);
+
+    card.addEventListener("click", () => playChannel(match));
 
     card.innerHTML = `
       <img src="${match.src || "https://placehold.co/600x375?text=No+Image"}" />
@@ -182,7 +192,9 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= LOAD MATCHES ================= */
 
   async function loadMatches() {
+
     try {
+
       const res = await fetch(
         "https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json?_=" +
         Date.now()
@@ -193,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderMatches(allMatches);
 
     } catch (err) {
+      console.error("Match load error:", err);
       allCategoriesContainer.innerHTML =
         "<div style='color:#f77;text-align:center;'>Failed to load matches.</div>";
     }
@@ -209,6 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const live = matches.filter(m => m.status === "LIVE");
+
     if (live.length) {
       allCategoriesContainer.appendChild(createSection("Live Now", live));
     }
@@ -229,11 +243,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ================= SEARCH ================= */
 
-  searchBar.oninput = () => {
+  searchBar.addEventListener("input", () => {
 
     const q = searchBar.value.toLowerCase().trim();
 
-    if (!q) return renderMatches(allMatches);
+    if (!q) {
+      renderMatches(allMatches);
+      return;
+    }
 
     const filtered = allMatches.filter(m =>
       m.title?.toLowerCase().includes(q) ||
@@ -243,8 +260,11 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     renderMatches(filtered);
-  };
+  });
 
+  /* ================= INIT ================= */
+
+  loadLayout();
   loadMatches();
   setInterval(loadMatches, 300000);
 

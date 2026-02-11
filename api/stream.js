@@ -1,47 +1,55 @@
+import crypto from "crypto";
+
 export default async function handler(req, res) {
+
   const { match_id, token, expiry } = req.query;
 
   if (!match_id || !token || !expiry) {
-    return res.status(400).send("Missing parameters");
+    return res.status(400).json({ error: "Missing parameters" });
   }
 
   const secret = process.env.STREAM_SECRET;
-  const crypto = require("crypto");
 
-  // Expiry check
-  if (Date.now() > parseInt(expiry)) {
-    return res.status(403).send("Token expired");
-  }
-
-  // Recreate token
   const expectedToken = crypto
     .createHmac("sha256", secret)
     .update(match_id + expiry)
     .digest("hex");
 
-  if (token !== expectedToken) {
-    return res.status(403).send("Invalid token");
+  if (expectedToken !== token) {
+    return res.status(403).json({ error: "Invalid token" });
   }
 
-  // 🔥 REAL STREAM URL (server side only)
-  const realStream =
-    "https://in-mc-fdlive.fancode.com/mumbai/140317_english_hls_a3519a753084938_1ta-di_h264/index.m3u8";
+  if (Date.now() > parseInt(expiry)) {
+    return res.status(403).json({ error: "Token expired" });
+  }
+
+  // 🔥 Get original stream URL from your JSON logic
+  const originalStream =
+    `https://in-mc-fdlive.fancode.com/mumbai/${match_id}_english_hls/index.m3u8`;
 
   try {
-    const response = await fetch(realStream);
+    const response = await fetch(originalStream, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.fancode.com/"
+      }
+    });
+
     let playlist = await response.text();
 
-    // Rewrite segment URLs (optional)
+    // 🔥 Rewrite segment URLs
     playlist = playlist.replace(
-      /https:\/\/.*\.ts/g,
+      /(.*\.ts)/g,
       (match) =>
-        `/api/proxy?segment=${encodeURIComponent(match)}`
+        `/api/segment?url=${encodeURIComponent(
+          new URL(match, originalStream).href
+        )}`
     );
 
     res.setHeader("Content-Type", "application/vnd.apple.mpegurl");
-    res.status(200).send(playlist);
+    res.send(playlist);
 
   } catch (err) {
-    res.status(500).send("Unable to fetch stream");
+    res.status(500).json({ error: "Stream fetch failed" });
   }
 }

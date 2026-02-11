@@ -1,47 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Secure Stream</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Loading Stream...</title>
+
+  <!-- JW Player -->
+  <script src="https://cdn.jwplayer.com/libraries/IDzF9Zmk.js"></script>
+
   <style>
     body {
       margin: 0;
-      background: black;
+      background: radial-gradient(circle at center, #111 0%, #000 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      font-family: "Inter", sans-serif;
     }
-    video {
+
+    .player-wrapper {
       width: 90%;
       max-width: 1200px;
-      border-radius: 12px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow:
+        0 60px 120px rgba(0,0,0,0.8),
+        0 0 40px rgba(0,0,0,0.6);
+      background: black;
+      position: relative;
+    }
+
+    #player {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+    }
+
+    /* Cinematic Glow */
+    .player-wrapper::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #00e5ff33, #ff2d5533);
+      z-index: -1;
+      filter: blur(20px);
+    }
+
+    /* Hide JW logo if license allows */
+    .jwplayer .jw-logo {
+      display: none !important;
+    }
+
+    /* Minimal control bar */
+    .jwplayer .jw-controlbar {
+      background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.85),
+        rgba(0,0,0,0.4),
+        transparent
+      ) !important;
+    }
+
+    /* White progress bar */
+    .jwplayer .jw-slider-time .jw-progress {
+      background: #ffffff !important;
+    }
+
+    .jwplayer .jw-slider-time .jw-buffer {
+      background: rgba(255,255,255,0.2) !important;
+    }
+
+    /* Center play button style */
+    .jwplayer .jw-display-icon-container .jw-icon {
+      background: rgba(255,255,255,0.15) !important;
+      border-radius: 50% !important;
+      padding: 18px !important;
+      backdrop-filter: blur(10px);
+      transition: 0.3s ease;
+    }
+
+    .jwplayer .jw-display-icon-container .jw-icon:hover {
+      transform: scale(1.1);
+      background: rgba(255,255,255,0.3) !important;
+    }
+
+    /* Loader */
+    .loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #aaa;
+      font-size: 16px;
+      background: rgba(0,0,0,0.6);
+      z-index: 10;
     }
   </style>
 </head>
 <body>
 
-<video id="video" controls autoplay></video>
+  <div class="player-container">
+    <div id="stream-title"></div>
+    <div id="player"></div>
+    <div id="loader">Loading stream...</div>
+  </div>
 
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const matchId = params.get("match_id");
-  const token = params.get("token");
-  const expiry = params.get("expiry");
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const matchId = params.get("match_id");
+    const token = params.get("token");
+    const expiry = params.get("expiry");
+    const streamTitle = params.get("title");
 
-  const video = document.getElementById("video");
+    if (!matchId || !token || !expiry) {
+      document.body.innerHTML = "<h2 style='color:red'>Invalid stream request</h2>";
+      throw new Error("Missing parameters");
+    }
 
-  const streamUrl =
-    `/api/stream?match_id=${matchId}&token=${token}&expiry=${expiry}`;
+    // Set dynamic title
+    if (streamTitle) {
+      const decodedTitle = decodeURIComponent(streamTitle);
+      document.title = decodedTitle;
+      document.getElementById("stream-title").innerText = decodedTitle;
+    }
 
-  if (Hls.isSupported()) {
-    const hls = new Hls();
-    hls.loadSource(streamUrl);
-    hls.attachMedia(video);
-  } else {
-    video.src = streamUrl;
-  }
-</script>
+    const streamUrl =
+      `/api/stream?match_id=${matchId}&token=${token}&expiry=${expiry}`;
+
+    const player = jwplayer("player");
+
+    player.setup({
+      file: streamUrl,
+      type: "hls",
+      width: "100%",
+      aspectratio: "16:9",
+      autostart: true,
+      controls: true,
+      mute: false,
+      stretching: "uniform",
+    });
+
+    player.on("ready", function () {
+      document.getElementById("loader").style.display = "none";
+    });
+
+    player.on("error", function () {
+      document.getElementById("loader").innerText =
+        "Stream unavailable or token expired.";
+    });
+  </script>
 
 </body>
 </html>
