@@ -8,12 +8,7 @@ export default function handler(req, res) {
   }
 
   const secret = process.env.STREAM_SECRET;
-
-  if (!secret) {
-    return res.status(500).json({ error: "Secret not configured" });
-  }
-
-  const expiry = Date.now() + 5 * 60 * 1000; // 5 minutes
+  const expiry = Date.now() + 5 * 60 * 1000;
 
   const token = crypto
     .createHmac("sha256", secret)
