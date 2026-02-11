@@ -34,15 +34,16 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => div.remove(), 3000);
   };
 
-  /* ================= OPEN STREAM IN NEW TAB ================= */
+  /* ================= OPEN STREAM USING MATCH ID ================= */
 
-  function openStream(url) {
-    if (!url) {
-      showError("Stream is not available right now.");
+  function openStreamByMatchId(matchId) {
+    if (!matchId) {
+      showError("Stream not available.");
       return;
     }
 
-    const newWindow = window.open(url, "_blank");
+    const streamUrl = `/api/stream/${matchId}`;
+    const newWindow = window.open(streamUrl, "_blank");
 
     if (!newWindow) {
       showError("Popup blocked. Please allow popups.");
@@ -52,7 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= STREAM SELECTOR ================= */
 
   function showStreamSelector(match) {
-    const { adfree_url, dai_url, src, title } = match;
+    const { match_id, src, title } = match;
 
     const overlay = document.createElement("div");
     overlay.id = "apple-stream-overlay";
@@ -66,20 +67,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         <div class="apple-content">
           <h2>${title || "Live Stream"}</h2>
-          <p>Choose how you want to watch</p>
+          <p>Start watching now</p>
 
           <div class="apple-buttons">
-            ${adfree_url ? `
-              <button class="apple-btn primary" id="appleAdfree">
-                ▶ Watch Ad-Free
-              </button>
-            ` : ""}
-
-            ${dai_url ? `
-              <button class="apple-btn secondary" id="appleStandard">
-                ▶ Watch Standard
-              </button>
-            ` : ""}
+            <button class="apple-btn primary" id="appleWatch">
+              ▶ Watch Live
+            </button>
           </div>
 
           <button class="apple-close" id="appleClose">Cancel</button>
@@ -89,19 +82,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.body.appendChild(overlay);
 
-    if (adfree_url) {
-      document.getElementById("appleAdfree").onclick = () => {
-        overlay.remove();
-        openStream(adfree_url);
-      };
-    }
-
-    if (dai_url) {
-      document.getElementById("appleStandard").onclick = () => {
-        overlay.remove();
-        openStream(dai_url);
-      };
-    }
+    document.getElementById("appleWatch").onclick = () => {
+      overlay.remove();
+      openStreamByMatchId(match_id);
+    };
 
     document.getElementById("appleClose").onclick = () => overlay.remove();
 
@@ -113,18 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= PLAY CHANNEL ================= */
 
   function playChannel(match) {
-    const { adfree_url, dai_url } = match;
-
-    if (!adfree_url && !dai_url) {
+    if (!match.match_id) {
       showError("No live stream available.");
       return;
     }
 
-    if (adfree_url && dai_url && adfree_url !== dai_url) {
-      showStreamSelector(match);
-    } else {
-      openStream(adfree_url || dai_url);
-    }
+    showStreamSelector(match);
   }
 
   /* ================= MATCH CARD ================= */
