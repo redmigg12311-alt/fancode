@@ -2,11 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const allCategoriesContainer = document.getElementById("allCategoriesContainer");
   const searchBar = document.getElementById("searchBar");
-  const playerPopup = document.getElementById("player-popup");
-  const closeBtn = document.getElementById("close-player");
 
   let allMatches = [];
-  let playerInstance = null;
 
   /* ================= HEADER / FOOTER ================= */
 
@@ -37,82 +34,22 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => div.remove(), 3000);
   };
 
-  /* ================= PLAYER ================= */
+  /* ================= OPEN STREAM IN NEW TAB ================= */
 
-  function showLoader() {
-    const loader = document.createElement("div");
-    loader.id = "player-loader";
-    loader.innerHTML = "Loading stream...";
-    playerPopup.appendChild(loader);
-  }
-
-  function removeLoader() {
-    const loader = document.getElementById("player-loader");
-    if (loader) loader.remove();
-  }
-
-  function openPlayer(streamUrl) {
-    if (!streamUrl) {
+  function openStream(url) {
+    if (!url) {
       showError("Stream is not available right now.");
       return;
     }
 
-    playerPopup.classList.add("active");
-    showLoader();
+    const newWindow = window.open(url, "_blank");
 
-    if (playerInstance) {
-      playerInstance.remove();
-      playerInstance = null;
+    if (!newWindow) {
+      showError("Popup blocked. Please allow popups.");
     }
-
-    playerInstance = jwplayer("player-container");
-
-    playerInstance.setup({
-      file: streamUrl,
-      type: "hls",
-      autostart: true,
-      width: "100%",
-      aspectratio: "16:9",
-    });
-
-    playerInstance.on("ready", () => {
-      removeLoader();
-    });
-
-    playerInstance.on("error", () => {
-      removeLoader();
-      showError("This stream is not available right now.");
-      closePlayer();
-    });
-
-    playerInstance.on("setupError", () => {
-      removeLoader();
-      showError("Unable to load the player.");
-      closePlayer();
-    });
   }
 
-  function closePlayer() {
-    if (playerInstance) {
-      playerInstance.stop();
-      playerInstance.remove();
-      playerInstance = null;
-    }
-
-    playerPopup.classList.remove("active");
-  }
-
-  closeBtn.onclick = closePlayer;
-
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePlayer();
-  });
-
-  playerPopup.addEventListener("click", (e) => {
-    if (e.target === playerPopup) closePlayer();
-  });
-
-  /* ================= APPLE TV STREAM SELECT ================= */
+  /* ================= STREAM SELECTOR ================= */
 
   function showStreamSelector(match) {
     const { adfree_url, dai_url, src, title } = match;
@@ -155,14 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (adfree_url) {
       document.getElementById("appleAdfree").onclick = () => {
         overlay.remove();
-        openPlayer(adfree_url);
+        openStream(adfree_url);
       };
     }
 
     if (dai_url) {
       document.getElementById("appleStandard").onclick = () => {
         overlay.remove();
-        openPlayer(dai_url);
+        openStream(dai_url);
       };
     }
 
@@ -186,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (adfree_url && dai_url && adfree_url !== dai_url) {
       showStreamSelector(match);
     } else {
-      openPlayer(adfree_url || dai_url);
+      openStream(adfree_url || dai_url);
     }
   }
 
@@ -248,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const res = await fetch(
         "https://raw.githubusercontent.com/drmlive/fancode-live-events/main/fancode.json?_=" +
-          Date.now()
+        Date.now()
       );
 
       const data = await res.json();
