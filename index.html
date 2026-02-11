@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -42,15 +42,42 @@
     />
 
     <!-- Favicons for All Platforms -->
-    <link rel="icon" type="image/png" sizes="32x32" href="https://i.ibb.co/vvz0tHNJ/favicon.jpg" />
-    <link rel="icon" type="image/png" sizes="16x16" href="https://i.ibb.co/vvz0tHNJ/favicon.jpg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="https://i.ibb.co/vvz0tHNJ/favicon.jpg" />
-    <link rel="icon" type="image/png" sizes="192x192" href="https://i.ibb.co/vvz0tHNJ/favicon.jpg" />
-    <link rel="icon" type="image/png" sizes="512x512" href="https://i.ibb.co/vvz0tHNJ/favicon.jpg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="https://i.ibb.co/vvz0tHNJ/favicon.jpg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="https://i.ibb.co/vvz0tHNJ/favicon.jpg"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://i.ibb.co/vvz0tHNJ/favicon.jpg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="https://i.ibb.co/vvz0tHNJ/favicon.jpg"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="https://i.ibb.co/vvz0tHNJ/favicon.jpg"
+    />
     <link rel="manifest" href="assets/site.webmanifest" />
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="msapplication-TileColor" content="#0a0a0a" />
-    <meta name="msapplication-TileImage" content="https://i.ibb.co/vvz0tHNJ/favicon.jpg" />
+    <meta
+      name="msapplication-TileImage"
+      content="https://i.ibb.co/vvz0tHNJ/favicon.jpg"
+    />
 
     <!-- Google Fonts -->
     <link
@@ -100,8 +127,20 @@
 
     <!-- JW Player Popup -->
     <div id="player-popup">
-      <div id="player-container"></div>
-      <button id="close-player">Close</button>
+      <div class="player-wrapper">
+        <div id="player-container"></div>
+        <button id="close-player" aria-label="Close Player">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M6 6L18 18M18 6L6 18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <script src="js/main.js"></script>
